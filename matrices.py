@@ -66,8 +66,9 @@ def Overlap_matrix(Slater_bases, nbasis):
 #S = Overlap_matrix(Slater_bases)
 #print(S)
 
-def Transformation_matrix():
-    return
+def transformation_matrix(S): #for real overlap matrices S, conjugate transpose is simply just transpose
+    L = np.linalg.cholesky(S)
+    return(np.linalg.inv(L).T)
 
 def V_ee(Slater_bases, nbasis):
     V_elecelec = np.zeros([nbasis, nbasis, nbasis, nbasis])

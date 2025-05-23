@@ -88,3 +88,76 @@ def nuclear_repulsion(atomic_masses, atomic_coordinates):
         return E_nn
 
 #wrirte all teh values out for each integral into a file
+
+def ss_overlap(g1, g2):
+    alpha1, alpha2 = g1.alpha, g2.alpha
+    p, q = alpha1 + alpha2, alpha1 * alpha2           #define parameters
+    r1, r2 = np.array(g1.coords), np.array(g2.coords)   
+    N1, N2  = g1.d, g2.d  #contraction coeff
+    c1, c2 = ((2*alpha1)/np.pi) ** 0.75, ((2*alpha2)/np.pi) ** 0.75   #normalization factors
+    
+    dstc_sqr = np.dot( r1-r2, r1-r2 )                  #distence squared
+    K_12 = np.exp(-(q/p) * dstc_sqr ) #exponential prefactor
+
+    inner_prod = K_12 * (N1*N2*c1*c2) * (np.pi/p)**1.5
+
+    return inner_prod
+
+def sp_overlap(g1, g2):
+    alpha1, alpha2 = g1.alpha, g2.alpha
+    p, q = alpha1 + alpha2, alpha1 * alpha2           #define parameters
+    r1, r2 = np.array(g1.coords), np.array(g2.coords)   
+    N1, N2  = g1.d, g2.d  #contraction coeff
+    dstc_sqr = np.dot( r1-r2, r1-r2 )                  #distence squared
+    K_12 = np.exp(-(q/p) * dstc_sqr ) #exponential prefactor
+
+    if g1.L == [0, 0, 0] :# if g2 is the p-type gaussian
+        c1, c2 = ((2*alpha1)/np.pi) ** 0.75, 2**1.75 * alpha2**1.25 * np.pi**(-0.75) #normalization factors
+        if g2.L[0] == 1:#if g2 is px
+            inner_prod = K_12 * (N1*N2*c1*c2) * alpha1 * p**(-2.5) * (r1[0] - r2[0]) * np.pi**1.5
+        elif g2.L[1] == 1: # if g2 is py
+            inner_prod = K_12 * (N1*N2*c1*c2) * alpha1 * p**(-2.5) * (r1[1] - r2[1]) * np.pi**1.5
+        else: # if g2 is pz
+            inner_prod = K_12 * (N1*N2*c1*c2) * alpha1 * p**(-2.5) * (r1[2] - r2[2]) * np.pi**1.5
+
+    else: #g1 is p-type
+        c1, c2 = 2**1.75 * alpha1**1.25 * np.pi**(-0.75), ((2*alpha2)/np.pi) ** 0.75
+        if g1.L[0] == 1:#if g1 is px
+            inner_prod = K_12 * (N1*N2*c1*c2) * alpha2 * p**(-2.5) * (r2[0] - r1[0]) * np.pi**1.5
+        elif g1.L[1] == 1: # if g1 is py
+            inner_prod = K_12 * (N1*N2*c1*c2) * alpha2 * p**(-2.5) * (r2[1] - r1[1]) * np.pi**1.5
+        else: #if G1 is pz
+            inner_prod = K_12 * (N1*N2*c1*c2) * alpha2 * p**(-2.5) * (r2[2] - r1[2]) * np.pi**1.5
+
+    return inner_prod
+
+def pp_overlap(g1, g2):
+    alpha1, alpha2 = g1.alpha, g2.alpha
+    p, q = alpha1 + alpha2, alpha1 * alpha2           #define parameters
+    r1, r2 = np.array(g1.coords), np.array(g2.coords)   
+    N1, N2  = g1.d, g2.d  #contraction coeff
+    dstc_sqr = np.dot( r1-r2, r1-r2 )                  #distence squared
+    K_12 = np.exp(-(q/p) * dstc_sqr ) #exponential prefactor
+    c1, c2 = 2**1.75 * alpha1**1.25 * np.pi**(-0.75), 2**1.75 * alpha2**1.25 * np.pi**(-0.75) #normalization factors
+    L1, L2 = g1.L, g2.L
+
+    if L1 == [1, 0, 0] and L2 == [1, 0, 0]:#both px
+        inner_prod = K_12 * (N1*N2*c1*c2) * ( 1/(2*p) - q * ((r1[0]-r2[0])/p)**2 ) * (np.pi/p)**1.5
+    elif L1 == [0, 1, 0] and L2 == [0, 1, 0]:#both py
+        inner_prod = K_12 * (N1*N2*c1*c2) * ( 1/(2*p) - q * ((r1[1]-r2[1])/p)**2 ) * (np.pi/p)**1.5
+    elif L1 == [0, 0, 1] and L2 == [0, 0, 1]:#both pz
+        inner_prod = K_12 * (N1*N2*c1*c2) * ( 1/(2*p) - q * ((r1[2]-r2[2])/p)**2 ) * (np.pi/p)**1.5
+    elif L1 == [1, 0, 0] and L2 == [0, 1, 0]:#g1 px, g2 py
+        inner_prod = K_12 * (N1*N2*c1*c2) * q * p**(-3.5) * np.pi**1.5 * (r2[0] - r1[0]) * (r1[1] - r2[1])
+    elif L1 == [1, 0, 0] and L2 == [0, 0, 1]:#g1 px, g2 pz
+        inner_prod = K_12 * (N1*N2*c1*c2) * q * p**(-3.5) * np.pi**1.5 * (r2[0] - r1[0]) * (r1[2] - r2[2])
+    elif L1 == [0, 1, 0] and L2 == [1, 0, 0]: #g1 py, g2 px
+        inner_prod = K_12 * (N1*N2*c1*c2) * q * p**(-3.5) * np.pi**1.5 * (r1[0] - r2[0]) * (r2[1] - r1[1])
+    elif L1 == [0, 1, 0] and L2 == [0, 0, 1]: #g1 py, g2 pz
+        inner_prod = K_12 * (N1*N2*c1*c2) * q * p**(-3.5) * np.pi**1.5 * (r1[2] - r2[2]) * (r2[1] - r1[1])
+    elif L1 == [0, 0, 1] and L2 == [1, 0, 0]: #g1 pz, g2 px
+        inner_prod = K_12 * (N1*N2*c1*c2) * q * p**(-3.5) * np.pi**1.5 * (r1[0] - r2[0]) * (r2[2] - r1[2])
+    else: #g1 pz, g2 py
+        inner_prod = K_12 * (N1*N2*c1*c2) * q * p**(-3.5) * np.pi**1.5 * (r1[1] - r2[1]) * (r2[2] - r1[2])
+        
+    return inner_prod

@@ -62,6 +62,26 @@ def Overlap_matrix(Slater_bases, nbasis):
                     S[i, j] += integrals.overlap(Slater_bases[i][k], Slater_bases[j][l])
     return S
 
+def overlap_matrix(Slater_bases, nbasis):
+    S = np.zeros([nbasis, nbasis])
+    for i in range(nbasis):
+        for j in range(nbasis):
+            n_contracted_i = len(Slater_bases[i])
+            n_contracted_j = len(Slater_bases[j])
+
+            for k in range(n_contracted_i):
+                for l in range(n_contracted_j):
+                    L1, L2 = Slater_bases[i][k].L, Slater_bases[j][l].L
+# if else statement to deterimine which function is used
+                    if L1 == [0, 0, 0] and L2 == [0, 0, 0]:
+                        S[i, j] += integrals.ss_overlap(Slater_bases[i][k], Slater_bases[j][l])
+                    elif 1 in L1 and 1 in L2:
+                        S[i, j] += integrals.pp_overlap(Slater_bases[i][k], Slater_bases[j][l])
+                    else:
+                        S[i, j] += integrals.sp_overlap(Slater_bases[i][k], Slater_bases[j][l])
+
+    return S
+
 #S = Overlap_matrix(Slater_bases)
 #print(S)
 

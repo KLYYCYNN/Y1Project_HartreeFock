@@ -4,7 +4,13 @@
 
 import numpy as np
 from scipy import linalg
-from scipy.special import factorial2
+from scipy.special import factorial
+
+def factorial2(x):
+     if x<0:
+          return 1
+     else:
+          return factorial(factorial(x))
 
 class contracted_gaussians():
     def __init__(self, alpha, d, coords, L): # angular momentum L = [lx, ly, lz]
